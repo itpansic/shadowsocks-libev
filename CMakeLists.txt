@@ -35,25 +35,29 @@ option(WITH_EMBEDDED_SRC "build with embedded libcork, libipset, and libbloom so
 # Will set GIT_EXECUTABLE and GIT_FOUND
 # find_package(Git)
 
-# Run platform tests
+# 平台检测，记录在宏里
 include(${CMAKE_SOURCE_DIR}/cmake/configure.cmake)
+
+# 复制config.h到目标目录并设置include目录和标识
 configure_file(${CMAKE_SOURCE_DIR}/cmake/config.h.cmake ${CMAKE_BINARY_DIR}/src/config.h)
 add_definitions(-I$(CMAKE_BINARY_DIR)/src)
 add_definitions(-DHAVE_CONFIG_H)
 
-# pkg-config
+# 拷贝 shadowsocks-libev.pc 到 build/pkgconfig/下
 configure_file(
         ${CMAKE_SOURCE_DIR}/cmake/shadowsocks-libev.pc.cmake
         ${CMAKE_BINARY_DIR}/pkgconfig/shadowsocks-libev.pc
         @ONLY
 )
+# 安装 shadowsocks-libev.pc 到系统目录
 install(FILES
         ${CMAKE_BINARY_DIR}/pkgconfig/shadowsocks-libev.pc
         DESTINATION pkgconfig
         )
 
+# 需要使用自带的 libcork, libipset, and libbloom source.
 if (WITH_EMBEDDED_SRC)
-# We need libcork,libipset headers
+
 include_directories(libcork/include)
 include_directories(libipset/include)
 include_directories(libbloom/murmur2)
@@ -141,6 +145,10 @@ target_link_libraries(ipset-shared cork-shared bloom-shared)
 set_target_properties(bloom-shared PROPERTIES OUTPUT_NAME bloom)
 endif ()
 
+# !需要使用自带的 libcork, libipset, and libbloom source.
+
+# 包含src目录
 add_subdirectory(src)
+# 包含doc目录
 add_subdirectory(doc)
 
